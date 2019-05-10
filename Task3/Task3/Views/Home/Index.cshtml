@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>ICA Part 2</title>
+    <style>
+        /*Pretty Print styles*/
+        pre {
+            outline: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .string {
+            color: green;
+        }
+
+        .number {
+            color: darkorange;
+        }
+
+        .boolean {
+            color: blue;
+        }
+
+        .null {
+            color: magenta;
+        }
+
+        .key {
+            color: red;
+        }
+
+        div#response {
+            width: 215px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="businessUnitsApi">
+        <h2>Business Unit Responses</h2>
+        <div id="buResponse">
+
+
+        </div>
+
+        <div>
+            <h2>Search by ID</h2>
+            <input type="text" id="buId" size="5" />
+            <input type="button" value="Search" onclick="findBu();" />
+
+        </div>
+    </div>
+
+
+    <div class="staffApi">
+        <h2>Staff Responses</h2>
+        <div id="staffResponse">
+
+
+        </div>
+
+        <div>
+            <h2>Search by ID</h2>
+            <input type="text" id="staffId" size="5" />
+            <input type="button" value="Search" onclick="findStaff();" />
+
+        </div>
+    </div>
+
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script> 
+        <!-- to the JQuery which makes writing JavaScript more convenient -->
+    
+    <script>
+        var buUri = 'api/BusinessUnits'; //storing the URL extension to a string
+        var staffUri = 'api/Staffs'; //storing the URL extension to a string
+        $(document).ready(function () {
+            // the functions contained within are only useable when the page is loaded
+            // Send an AJAX request
+            // linking to the JQuery which makes writing JavaScript more convenient
+
+
+            $.getJSON(buUri) //$ denotes JQuery 
+                .done(function (data) { //when the BusinessUnits data is returned from buUri it is stored in data
+                    console.info(data); //The data is printed to the console. This can be seen in developer view.  
+                    var json = JSON.stringify(data, null, 4); // spacing level = 4. Also parsing JSON to String
+                    var prettyPrintJson = prettyPrint(json); // runs function prettyPrint [below] 
+                    $('#buResponse').html(prettyPrintJson); // puts the data in the buResponse HTML class
+                }); // end of buUri
+
+            $.getJSON(staffUri) // as above but for staffUri
+                .done(function (data) {
+                    console.info(data);
+                    var json = JSON.stringify(data, null, 4); // spacing level = 4
+                    var prettyPrintJson = prettyPrint(json);
+                    $('#staffResponse').html(prettyPrintJson);
+                });
+        });
+
+        // function ref https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+        function prettyPrint(json) { //pretty print is a Syntax highlighter, the colours can be seen above in the inline CSS. E.g. the key value will be returned in red
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key'; //testing to see if hte the value is the key
+                    } else {
+                        cls = 'string'; //testing for type string 
+                    }
+                } else if (/true|false/.test(match)) { //testing for type boolean
+                    cls = 'boolean';
+                } else if (/null/.test(match)) { //testing for type null
+                    cls = 'null';
+                } 
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+
+        }
+
+        function findBu() {
+            var id = $('#buId').val();
+            $.getJSON(buUri + '/' + id)
+                .done(function (data) {
+                    var json = JSON.stringify(data, null, 4); // spacing level = 4
+                    $('#buResponse').html(prettyPrint(json));
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#buResponse').text('Error: ' + err);
+                });
+        }
+
+        function findStaff() {
+            var id = $('#staffId').val();
+            $.getJSON(staffUri + '/' + id)
+                .done(function (data) {
+                    var json = JSON.stringify(data, null, 4); // spacing level = 4
+                    $('#staffResponse').html(prettyPrint(json));
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#staffResponse').text('Error: ' + err);
+                });
+        }
+    </script>
+</body>
+</html>
